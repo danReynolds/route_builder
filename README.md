@@ -39,7 +39,7 @@ Navigator.of(context).push(
 );
 ```
 
-We want to make sure that we're always formatting our route names correctly across all the places in our app where we navigate to `ViewEmployeeMessage`. That's where the `route_builder` package comes in. Route builder allows you to create and match routes by path, query parameters and arguments.
+We want to make sure that we're always formatting our route names correctly across all the places in our app where we navigate to an employee message. That's where the `route_builder` package comes in. Route builder allows you to create and match routes by path, query parameters and arguments.
 
 Here is an example where we define some routes for managing employee messages using route builder:
 
@@ -92,7 +92,7 @@ class Routes {
 }
 ```
 
-The next time we need to navigate view an employee message, we can then call our route builder with our type-safe arguments:
+The next time we need to navigate view an employee message, we can then call the route factory with our type-safe arguments:
 
 ```dart
 final employeeId = uuid();
@@ -266,7 +266,7 @@ class Routes {
 }
 ```
 
-These fields can be matched by either the argument paths or the query parameters:
+These fields can be matched by either the argument path components or the query parameters:
 
 ```dart
 viewEmployeeMessage.match('/employee/1/messages/1'); // true
