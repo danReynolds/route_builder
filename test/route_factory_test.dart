@@ -1,6 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:route_builder/arguments.dart';
-import 'package:route_builder/arguments_factory.dart';
 import 'package:route_builder/route_builder.dart';
 
 class TestArguments extends Arguments {
