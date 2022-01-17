@@ -1,16 +1,20 @@
 import 'package:route_builder/arguments.dart';
 import 'package:route_builder/arguments_factory.dart';
 
-class RoutePath<Y extends Arguments, T extends ArgumentsFactory<Y>> {
-  String path;
+/// A path arguments parser and builder for parsing arguments from a given path
+/// matching the arguments format:
+/// /{arg1}/.../{arg2}
+/// and building a path of the given format from a set of args.
+class PathArguments<Y extends Arguments, T extends ArgumentsFactory<Y>> {
+  String pathFormat;
   late RegExp _pathParser;
 
   final _pathArgRegex = RegExp('\{(.*?)\}');
   final _buildArgFragment = "[\\w\\d-]*?";
   final List<String> argsList = [];
 
-  RoutePath(this.path) {
-    _pathParser = _buildParser(path);
+  PathArguments(this.pathFormat) {
+    _pathParser = _buildParser(pathFormat);
   }
 
   RegExp _buildParser(String path) {
@@ -41,8 +45,8 @@ class RoutePath<Y extends Arguments, T extends ArgumentsFactory<Y>> {
     return _pathParser.firstMatch(path) != null;
   }
 
-  String build(Map<String, String> argsJson) {
-    String path = "${this.path}";
+  String buildPath(Map<String, String?> argsJson) {
+    String path = pathFormat;
 
     while (_pathArgRegex.hasMatch(path)) {
       final argName = _pathArgRegex.firstMatch(path)!.group(1)!;

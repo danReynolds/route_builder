@@ -1,30 +1,32 @@
 import 'package:route_builder/arguments.dart';
 import 'package:route_builder/arguments_factory.dart';
-import 'package:route_builder/route_path.dart';
-import 'package:route_builder/config.dart';
+import 'package:route_builder/path_arguments.dart';
 import 'package:route_builder/route.dart';
 import 'package:route_builder/route_matcher.dart';
 import 'package:route_builder/uri.dart';
 
 class RouteFactory<T extends Arguments> extends RouteMatcher {
   final ArgumentsFactory<T> argsFactory;
-  late RoutePath _routePath;
+  late PathArguments _pathArguments;
 
   RouteFactory(
-    String name, {
+    String pathFormat, {
     required this.argsFactory,
-    AuthFn? authorize,
-  }) : super(name: name, authorize: authorize) {
-    _routePath = RoutePath(Uri.decodeFull(uri.path));
+    bool strictQueryParams = false,
+  }) : super(
+          name: pathFormat,
+          strictQueryParams: strictQueryParams,
+        ) {
+    _pathArguments = PathArguments(Uri.decodeFull(uri.path));
   }
 
   RouteWithArguments<T> _buildRoute(T arguments) {
     final argsJson = arguments.toJson();
-    final path = _routePath.build(argsJson);
+    final path = _pathArguments.buildPath(argsJson);
 
     // The remaining arguments that were not interpolated into the path
     // are added as query params.
-    argsJson.removeWhere((key, _) => _routePath.argsList.contains(key));
+    argsJson.removeWhere((key, _) => _pathArguments.argsList.contains(key));
 
     final name = Uri(path: path, queryParameters: {
       ...uri.queryParameters,
@@ -52,7 +54,7 @@ class RouteFactory<T extends Arguments> extends RouteMatcher {
     }
 
     final uri = Uri.parse(route);
-    final parsedArgs = _routePath.parseArgs(uri.path);
+    final parsedPathArgs = _pathArguments.parseArgs(uri.path);
 
     // The args JSON includes:
     // 1. Matched data from the args parser
@@ -61,8 +63,16 @@ class RouteFactory<T extends Arguments> extends RouteMatcher {
     Map<String, String> argsJson = {
       ...uri.queryParameters,
       ...this.uri.queryParameters,
-      ...parsedArgs,
+      ...parsedPathArgs,
     };
+
+    // If any of the required arguments are not present in the args map,
+    // return null to indicate that the arguments could not be built.
+    for (String argName in argsFactory.requiredArgs) {
+      if (!argsJson.containsKey(argName)) {
+        return null;
+      }
+    }
 
     return argsFactory.fromJson(argsJson);
   }
@@ -75,6 +85,19 @@ class RouteFactory<T extends Arguments> extends RouteMatcher {
 
     final uri = Uri.parse(route);
 
-    return this.uri.path.isEmpty || _routePath.match(uri.path);
+    // The path for a route factory must also match its path format.
+    return this.uri.path.isEmpty || _pathArguments.match(uri.path);
+  }
+
+  @override
+  match(String? route) {
+    if (!super.match(route)) {
+      return false;
+    }
+
+    // A route factory additionally validates that the route has all the required
+    // arguments specified by the arguments factory which can be checked by attempting
+    // to build the arguments for the given route.
+    return _buildArgs(route) != null;
   }
 }

@@ -23,15 +23,25 @@ void main() {
   });
 
   group('match', () {
-    test('should return true for matching paths', () {
-      expect(Route('/test').match('/test'), true);
+    group('with a matching path', () {
+      test('should return true', () {
+        expect(Route('/test').match('/test'), true);
+      });
+
+      group('with query params', () {
+        test('should return true for matching query params', () {
+          expect(Route('/test?param').match('/test?param'), true);
+        });
+      });
     });
 
-    test('should return false for non-matching paths', () {
-      expect(Route('/test').match('/test2'), false);
+    group('with no matching path', () {
+      test('should return false for unmatched paths', () {
+        expect(Route('/test').match('/test2'), false);
+      });
     });
 
-    group('match query params', () {
+    group('with no path', () {
       test('should return true for matching query params', () {
         expect(Route('?test').match('?test'), true);
       });
@@ -50,32 +60,6 @@ void main() {
           false,
         );
       });
-    });
-
-    test('return true for matching paths and matching query params', () {
-      expect(Route('/test?param').match('/test?param'), true);
-    });
-  });
-
-  group('isAuthorized', () {
-    bool isAuthorized([_]) {
-      return true;
-    }
-
-    bool isNotAuthorized([_]) {
-      return false;
-    }
-
-    test('should return true by default', () {
-      expect(Route('/').isAuthorized(), true);
-    });
-
-    test('should return true when it satisifies the auth function', () {
-      expect(Route('/', authorize: isAuthorized).isAuthorized(), true);
-    });
-
-    test('should return false when it does not satisify the auth function', () {
-      expect(Route('/', authorize: isNotAuthorized).isAuthorized(), false);
     });
   });
 }
