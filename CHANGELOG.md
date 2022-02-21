@@ -1,4 +1,8 @@
 
+## 0.0.4
+
+Fix relative URI name construction
+
 ## 0.0.3
 
 * Update documentation

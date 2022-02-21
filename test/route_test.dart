@@ -3,14 +3,26 @@ import 'package:route_builder/route_builder.dart';
 
 void main() {
   group('name', () {
-    group('with a path', () {
-      test('should return the absolute path', () {
+    group('with no path or query params', () {
+      test('should return a relative path', () {
+        expect(Route('').name, Uri.base.path);
+      });
+    });
+
+    group('with a base path', () {
+      test('should return the base absolute path', () {
         expect(Route('/').name, '/');
       });
     });
 
+    group('with a deep path', () {
+      test('should return the absolute path', () {
+        expect(Route('/test/thing').name, '/test/thing');
+      });
+    });
+
     group('with only query params', () {
-      test('should return a path relative to the current base', () {
+      test('should return a relative path with the query params', () {
         expect(Route('?test').name, '${Uri.base.path}?test');
       });
     });

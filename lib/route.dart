@@ -4,25 +4,25 @@ import 'package:route_builder/route_matcher.dart';
 import 'package:route_builder/uri.dart';
 
 class Route extends RouteMatcher {
-  late String name;
-
   Route(
     String name, {
     bool strictQueryParams = false,
   }) : super(
           strictQueryParams: strictQueryParams,
           name: name,
-        ) {
-    // If the provided route name has no path and is just query parameters,
-    // then append it to the current path.
+        );
+
+  String get name {
+    // If no path was specified in the route, then it is a relative route
+    // that should have a name relative to the current path.
     if (uri.path.isEmpty) {
-      this.name = Uri(
+      return Uri(
         path: Uri.base.path,
         queryParameters: uri.queryParameters,
       ).pathWithQuery;
-    } else {
-      this.name = name;
     }
+
+    return uri.pathWithQuery;
   }
 
   RouteSettings get settings {
