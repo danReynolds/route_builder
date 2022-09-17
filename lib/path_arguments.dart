@@ -9,8 +9,8 @@ class PathArguments<Y extends Arguments, T extends ArgumentsFactory<Y>> {
   String pathFormat;
   late RegExp _pathParser;
 
-  final _pathArgRegex = RegExp('\{(.*?)\}');
-  final _buildArgFragment = "[\\w\\d-]*?";
+  final _pathArgRegex = RegExp('{(.*?)}');
+  final _buildArgFragment = "[\\w\\d-]+?";
   final List<String> argsList = [];
 
   PathArguments(this.pathFormat) {
@@ -28,7 +28,7 @@ class PathArguments<Y extends Arguments, T extends ArgumentsFactory<Y>> {
       final argName = match.group(1)!;
       path = path.replaceFirst(
         _pathArgRegex,
-        "(\?<$argName>$_buildArgFragment)",
+        "(?<$argName>$_buildArgFragment)",
       );
 
       argsList.add(argName);

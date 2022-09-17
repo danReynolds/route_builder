@@ -1,3 +1,6 @@
+## 0.0.5
+
+Fix bug with empty path argument matching
 
 ## 0.0.4
 

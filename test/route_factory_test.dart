@@ -134,6 +134,18 @@ void main() {
       });
     });
 
+    group('with an empty path value', () {
+      test('should return false', () {
+        expect(
+          RouteFactory(
+            '/{param}',
+            argsFactory: TestArgumentsFactory(),
+          ).match('/'),
+          false,
+        );
+      });
+    });
+
     group('with no path', () {
       setUp(() {
         factory = RouteFactory(
