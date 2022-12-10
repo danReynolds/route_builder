@@ -1,3 +1,7 @@
+## 0.0.6
+
+Small bugfixes.
+
 ## 0.0.5
 
 Fix bug with empty path argument matching

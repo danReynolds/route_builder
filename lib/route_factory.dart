@@ -26,7 +26,8 @@ class RouteFactory<T extends Arguments> extends RouteMatcher {
 
     // The remaining arguments that were not interpolated into the path
     // are added as query params.
-    argsJson.removeWhere((key, _) => _pathArguments.argsList.contains(key));
+    argsJson.removeWhere((key, _) =>
+        _pathArguments.argsList.contains(key) || argsJson[key] == null);
 
     final name = Uri(path: path, queryParameters: {
       ...uri.queryParameters,

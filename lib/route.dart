@@ -25,6 +25,14 @@ class Route extends RouteMatcher {
     return uri.pathWithQuery;
   }
 
+  Uri get withBase {
+    return Uri.base.replace(
+      path: uri.path,
+      queryParameters:
+          uri.queryParameters.isNotEmpty ? uri.queryParameters : null,
+    );
+  }
+
   RouteSettings get settings {
     return RouteSettings(name: name);
   }
