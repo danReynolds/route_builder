@@ -4,8 +4,7 @@ version: 0.0.6
 homepage: https://github.com/danReynolds/route_builder
 
 environment:
-  sdk: ">=2.15.0 <3.0.0"
-  flutter: ">=1.17.0"
+  sdk: '>=3.0.2 <4.0.0'
 
 dependencies:
   flutter:

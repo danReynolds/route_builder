@@ -1,15 +1,13 @@
-import 'package:flutter/foundation.dart';
+part of route_builder;
 
 abstract class RouteMatcher {
-  late final Uri uri;
-  bool strictQueryParams;
+  final Uri _uri;
+  final bool strictQueryParams;
 
-  RouteMatcher({
-    required String name,
+  RouteMatcher(
+    String name, {
     this.strictQueryParams = false,
-  }) {
-    uri = Uri.parse(name);
-  }
+  }) : _uri = Uri.parse(name);
 
   bool matchQueryParams(String? route) {
     if (route == null) {
@@ -17,7 +15,7 @@ abstract class RouteMatcher {
     }
 
     final uri = Uri.parse(route);
-    final queryParams = this.uri.queryParameters;
+    final queryParams = _uri.queryParameters;
     final testQueryParams = uri.queryParameters;
 
     if (strictQueryParams) {
@@ -39,7 +37,7 @@ abstract class RouteMatcher {
 
     final uri = Uri.parse(route);
 
-    return this.uri.path.isEmpty || uri.path == this.uri.path;
+    return _uri.path.isEmpty || uri.path == _uri.path;
   }
 
   bool match(String? route) {

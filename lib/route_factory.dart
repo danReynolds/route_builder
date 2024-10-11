@@ -1,43 +1,59 @@
-import 'package:route_builder/arguments.dart';
-import 'package:route_builder/arguments_factory.dart';
-import 'package:route_builder/path_arguments.dart';
-import 'package:route_builder/route.dart';
-import 'package:route_builder/route_matcher.dart';
-import 'package:route_builder/uri.dart';
+part of route_builder;
 
-class RouteFactory<T extends Arguments> extends RouteMatcher {
-  final ArgumentsFactory<T> argsFactory;
-  late PathArguments _pathArguments;
+class ArgumentRouteFactory<T extends Arguments> extends RouteMatcher {
+  final ArgumentsFactory<T> _argsFactory;
 
-  RouteFactory(
-    String pathFormat, {
-    required this.argsFactory,
+  final _argsRegex = RegExp('{(.*?)}');
+  static const _buildArgFragment = "[\\w\\d-]+?";
+
+  final Set<String> _args = {};
+  late final String _path = Uri.decodeFull(_uri.path);
+  late final RegExp _pathRegex;
+
+  ArgumentRouteFactory(
+    String rawPath,
+    this._argsFactory, {
     bool strictQueryParams = false,
-  }) : super(
-          name: pathFormat,
-          strictQueryParams: strictQueryParams,
-        ) {
-    _pathArguments = PathArguments(Uri.decodeFull(uri.path));
+  }) : super(rawPath, strictQueryParams: strictQueryParams) {
+    // Build the path regex and args list.
+    String path = _path;
+    while (true) {
+      final match = _argsRegex.firstMatch(path);
+      if (match == null) {
+        break;
+      }
+
+      final argName = match.group(1)!;
+      path = path.replaceFirst(
+        _argsRegex,
+        "(?<$argName>$_buildArgFragment)",
+      );
+      _args.add(argName);
+    }
+
+    _pathRegex = RegExp("^$path\$");
   }
 
-  RouteWithArguments<T> _buildRoute(T arguments) {
-    final argsJson = arguments.toJson();
-    final path = _pathArguments.buildPath(argsJson);
+  /// Builds a route from the given args, interpolating fields in the path
+  /// and query parameters with the matching argument values.
+  RouteWithArguments<T> _buildRoute(T args) {
+    final argsJson = args.toJson();
 
-    // The remaining arguments that were not interpolated into the path
-    // are added as query params.
-    argsJson.removeWhere((key, _) =>
-        _pathArguments.argsList.contains(key) || argsJson[key] == null);
+    String interpolatedPath = _path;
+    while (_argsRegex.hasMatch(interpolatedPath)) {
+      final argName = _argsRegex.firstMatch(interpolatedPath)!.group(1)!;
+      interpolatedPath =
+          interpolatedPath.replaceFirst(_argsRegex, argsJson[argName]!);
+      argsJson.remove(argName);
+    }
 
-    final name = Uri(path: path, queryParameters: {
-      ...uri.queryParameters,
+    return Uri(path: interpolatedPath, queryParameters: {
+      ..._uri.queryParameters,
       ...argsJson,
-    }).pathWithQuery;
-
-    return RouteWithArguments(name: name, arguments: arguments);
+    }).toRoute(args);
   }
 
-  RouteWithArguments<T> call(T args) {
+  RouteWithArguments<T> build(T args) {
     return _buildRoute(args);
   }
 
@@ -49,33 +65,48 @@ class RouteFactory<T extends Arguments> extends RouteMatcher {
     return _buildRoute(_buildArgs(route)!);
   }
 
+  /// Extracts a [Map] of args from the given path.
+  Map<String, String> _extractArgs(String? path) {
+    Map<String, String> argsJson = {};
+    final argMatches = _pathRegex.firstMatch(path!);
+
+    for (String argName in _args) {
+      if (argMatches != null) {
+        String matchedGroup = argMatches.namedGroup(argName)!;
+        argsJson[argName] = matchedGroup;
+      }
+    }
+
+    return argsJson;
+  }
+
   T? _buildArgs(String? route) {
     if (route == null) {
       return null;
     }
 
     final uri = Uri.parse(route);
-    final parsedPathArgs = _pathArguments.parseArgs(uri.path);
+    final parsedPathArgs = _extractArgs(uri.path);
 
-    // The args JSON includes:
+    // The args JSON includes the following in the specified order of precedence:
     // 1. Matched data from the args parser
-    // 2. Data from the given URI query params
-    // 3. Data from the route's provided query params
+    // 2. Data from the route's own query params
+    // 3. Data from the given URI query params
     Map<String, String> argsJson = {
       ...uri.queryParameters,
-      ...this.uri.queryParameters,
+      ..._uri.queryParameters,
       ...parsedPathArgs,
     };
 
     // If any of the required arguments are not present in the args map,
     // return null to indicate that the arguments could not be built.
-    for (String argName in argsFactory.requiredArgs) {
+    for (String argName in _argsFactory.requiredArgs) {
       if (!argsJson.containsKey(argName)) {
         return null;
       }
     }
 
-    return argsFactory.fromJson(argsJson);
+    return _argsFactory.fromJson(argsJson);
   }
 
   @override
@@ -86,8 +117,9 @@ class RouteFactory<T extends Arguments> extends RouteMatcher {
 
     final uri = Uri.parse(route);
 
-    // The path for a route factory must also match its path format.
-    return this.uri.path.isEmpty || _pathArguments.match(uri.path);
+    // The path for a route factory additionally checks that the given route
+    // matches its path format.
+    return _uri.path.isEmpty || _pathRegex.firstMatch(uri.path) != null;
   }
 
   @override
@@ -100,5 +132,50 @@ class RouteFactory<T extends Arguments> extends RouteMatcher {
     // arguments specified by the arguments factory which can be checked by attempting
     // to build the arguments for the given route.
     return _buildArgs(route) != null;
+  }
+}
+
+class RouteFactory extends ArgumentRouteFactory<RouteArgs> {
+  RouteFactory(String path)
+      : super(path, const ArgumentsFactory(RouteArgs.fromJson));
+
+  RouteWithArguments<RouteArgs> call(String id) {
+    return build(RouteArgs(id));
+  }
+}
+
+class RouteFactory2 extends ArgumentRouteFactory<RouteArgs2> {
+  RouteFactory2(String path)
+      : super(path, const ArgumentsFactory(RouteArgs2.fromJson));
+
+  RouteWithArguments<RouteArgs2> call(String id, String id2) {
+    return build(RouteArgs2(id, id2));
+  }
+}
+
+class RouteFactory3 extends ArgumentRouteFactory<RouteArgs3> {
+  RouteFactory3(String path)
+      : super(path, const ArgumentsFactory(RouteArgs3.fromJson));
+
+  RouteWithArguments<RouteArgs3> call(
+    String id,
+    String id2,
+    String id3,
+  ) {
+    return build(RouteArgs3(id, id2, id3));
+  }
+}
+
+class RouteFactory4 extends ArgumentRouteFactory<RouteArgs4> {
+  RouteFactory4(String path)
+      : super(path, const ArgumentsFactory(RouteArgs4.fromJson));
+
+  RouteWithArguments<RouteArgs4> call(
+    String id,
+    String id2,
+    String id3,
+    String id4,
+  ) {
+    return build(RouteArgs4(id, id2, id3, id4));
   }
 }
