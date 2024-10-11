@@ -8,19 +8,12 @@ import 'package:route_builder/route_builder.dart';
 class Routes {
   static final users = Route('/users');
   static final editUser = RouteFactory('/user/{id}/edit');
+  static final viewPost = RouteFactory2('/user/{id}/post/{id2}');
 }
 
-class UsersPage extends StatelessRoute {
-  UsersPage() : super(route: Routes.users);
-}
-
-class EditUserPage extends StatelessRoute {
-  final String userId;
-
-  UserPage({
-    required this.userId,
-  }) : super(route: Routes.editUser(userId));
-}
+print(Routes.users.name); // /users
+print(Routes.editUser('1').name); // /user/1
+print(Routes.viewPost('1', '2').name); // /user/1/post/2
 ```
 
 ## Matching routes
@@ -34,8 +27,64 @@ print(Routes.editUser.match(routeStr)); // false
 
 print(Routes.editUser.match(editRouteStr)); // true
 
-final Route editRoute = Routes.editUser.parse(editRouteStr);
+final Route editRoute = Routes.editUser.parse(editRouteStr)!;
 print(editRoute.id); // 1
+
+final Route viewPostRoute = Routes.viewPost.parse('/user/1/post/2')!;
+print(viewPostRoute.id); // 1
+print(viewPostRoute.id2); // 2
+```
+
+## Custom factories
+
+By default, the route factories `RouteFactory`, `RouteFactory2`, `RouteFactory3`..., extract parameters
+to properties `id`, `id2`, `id3` out of convenience.
+
+If custom parameter naming is preferred, you can create a custom factory:
+
+```dart
+class UserPostArguments extends Arguments {
+  final String userId;
+  final String postId;
+
+  const UserPostArguments({
+    required this.userId,
+    required this.postId,
+  });
+
+  UserPostArguments.fromJson(Map<String, String> json) :
+    userId = json['userId']!,
+    postId = json['postId']!;
+
+  @override
+  toJson() {
+    return {
+      "userId": userId,
+      "postId": postId,
+    };
+  }
+}
+
+class UserPostRouteFactory extends ArgumentRouteFactory<UserPostArguments> {
+  RouteFactory(String path)
+      : super(path, const ArgumentsFactory(UserPostArguments.fromJson));
+
+  RouteWithArguments<UserPostArguments> call({
+    required String userId,
+    required String postId,
+  }) {
+    return build(UserPostArguments(userId: userId, postId: postId));
+  }
+}
+
+final viewPost = UserPostRouteFactory('/user/{id}/post/{id2}');
+final viewPostRoute = viewPost(
+  userId: '1',
+  postId: '2',
+);
+
+print(viewPostRoute.userId); // 1
+print(viewPostRoute.postId); // 2
 ```
 
 ## Navigation
@@ -46,16 +95,28 @@ Flutter supports specifying route names when performing navigation events:
 Navigator.of(context).pushNamed(Routes.users.name);
 ```
 
-We can similarly update the path for anonymous routes by specifying a route settings object:
+Or by specifying a `RouteSettings` object:
 
 ```dart
-final userId = '1';
-
 Navigator.of(context).push(
   MaterialPageRoute(
-    settings: Routes.editUser(userId),
+    settings: RouteSettings(name: Routes.users.name),
     builder: (BuildContext context) {
-      return EditUserPage(userId: userId);
+      return ViewUsersPage();
+    },
+  )
+);
+```
+
+You can also access the `RouteSettings` directly from the route:
+
+
+```dart
+Navigator.of(context).push(
+  MaterialPageRoute(
+    settings: Routes.users.settings,
+    builder: (BuildContext context) {
+      return ViewUsersPage();
     },
   )
 );
