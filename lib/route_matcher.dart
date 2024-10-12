@@ -1,15 +1,15 @@
-import 'package:flutter/foundation.dart';
+part of route_builder;
 
-abstract class RouteMatcher {
-  late final Uri uri;
-  bool strictQueryParams;
+abstract class _RouteMatcher {
+  final Uri _uri;
+  final bool strictQueryParams;
 
-  RouteMatcher({
-    required String name,
+  _RouteMatcher(
+    String name, {
+    /// Require that the query params extracted from [name] *must* strictly match those
+    /// provided in comparison matching.
     this.strictQueryParams = false,
-  }) {
-    uri = Uri.parse(name);
-  }
+  }) : _uri = Uri.parse(name);
 
   bool matchQueryParams(String? route) {
     if (route == null) {
@@ -17,19 +17,19 @@ abstract class RouteMatcher {
     }
 
     final uri = Uri.parse(route);
-    final queryParams = this.uri.queryParameters;
-    final testQueryParams = uri.queryParameters;
+    final queryParams = _uri.queryParameters;
+    final otherQueryParams = uri.queryParameters;
 
     if (strictQueryParams) {
-      return mapEquals(queryParams, testQueryParams);
-    } else {
-      for (String key in queryParams.keys) {
-        if (testQueryParams[key] != queryParams[key]) {
-          return false;
-        }
-      }
-      return true;
+      return mapEquals(queryParams, otherQueryParams);
     }
+
+    for (String key in queryParams.keys) {
+      if (queryParams[key] != otherQueryParams[key]) {
+        return false;
+      }
+    }
+    return true;
   }
 
   bool matchPath(String? route) {
@@ -37,9 +37,7 @@ abstract class RouteMatcher {
       return false;
     }
 
-    final uri = Uri.parse(route);
-
-    return this.uri.path.isEmpty || uri.path == this.uri.path;
+    return Uri.parse(route).path == _uri.path;
   }
 
   bool match(String? route) {

@@ -1,19 +1,16 @@
 name: route_builder
 description: A Flutter navigation utility package for building and matching routes by path, query parameters and arguments.
-version: 0.0.6
+version: 1.0.0
 homepage: https://github.com/danReynolds/route_builder
 
 environment:
-  sdk: ">=2.15.0 <3.0.0"
-  flutter: ">=1.17.0"
+  sdk: '>=3.0.2 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
 
 dev_dependencies:
-  build_runner: ^2.1.7
-  mockito: ^5.0.17
   flutter_test:
     sdk: flutter
   flutter_lints: ^1.0.0

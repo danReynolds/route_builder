@@ -1,3 +1,7 @@
+## 1.0.0
+
+Refactor architecture.
+
 ## 0.0.6
 
 Small bugfixes.

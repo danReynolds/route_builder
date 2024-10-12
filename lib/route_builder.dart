@@ -1,6 +1,12 @@
 library route_builder;
 
-export 'route.dart' show Route;
-export 'route_factory.dart';
-export 'arguments.dart';
-export 'arguments_factory.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+
+part 'route_factory.dart';
+part 'route_matcher.dart';
+part 'route_widget.dart';
+part 'route.dart';
+part 'types.dart';
+part 'arguments.dart';
+part 'extensions/uri.dart';
