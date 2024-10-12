@@ -7,7 +7,7 @@ abstract class Arguments {
 }
 
 class ArgumentsFactory<T> {
-  final T Function(Map<String, String> json) fromJson;
+  final FromJson<T> fromJson;
   final List<String> requiredArgs;
 
   const ArgumentsFactory(

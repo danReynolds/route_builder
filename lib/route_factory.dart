@@ -1,6 +1,6 @@
 part of route_builder;
 
-class ArgumentRouteFactory<T extends Arguments> extends RouteMatcher {
+class ArgumentRouteFactory<T extends Arguments> extends _RouteMatcher {
   final ArgumentsFactory<T> _argsFactory;
 
   final _argsRegex = RegExp('{(.*?)}');
@@ -34,52 +34,6 @@ class ArgumentRouteFactory<T extends Arguments> extends RouteMatcher {
     _pathRegex = RegExp("^$path\$");
   }
 
-  /// Builds a route from the given args, interpolating fields in the path
-  /// and query parameters with the matching argument values.
-  RouteWithArguments<T> _buildRoute(T args) {
-    final argsJson = args.toJson();
-
-    String interpolatedPath = _path;
-    while (_argsRegex.hasMatch(interpolatedPath)) {
-      final argName = _argsRegex.firstMatch(interpolatedPath)!.group(1)!;
-      interpolatedPath =
-          interpolatedPath.replaceFirst(_argsRegex, argsJson[argName]!);
-      argsJson.remove(argName);
-    }
-
-    return Uri(path: interpolatedPath, queryParameters: {
-      ..._uri.queryParameters,
-      ...argsJson,
-    }).toRoute(args);
-  }
-
-  RouteWithArguments<T> build(T args) {
-    return _buildRoute(args);
-  }
-
-  RouteWithArguments<T>? parse(String? route) {
-    if (!match(route)) {
-      return null;
-    }
-
-    return _buildRoute(_buildArgs(route)!);
-  }
-
-  /// Extracts a [Map] of args from the given path.
-  Map<String, String> _extractArgs(String? path) {
-    Map<String, String> argsJson = {};
-    final argMatches = _pathRegex.firstMatch(path!);
-
-    for (String argName in _args) {
-      if (argMatches != null) {
-        String matchedGroup = argMatches.namedGroup(argName)!;
-        argsJson[argName] = matchedGroup;
-      }
-    }
-
-    return argsJson;
-  }
-
   T? _buildArgs(String? route) {
     if (route == null) {
       return null;
@@ -109,17 +63,55 @@ class ArgumentRouteFactory<T extends Arguments> extends RouteMatcher {
     return _argsFactory.fromJson(argsJson);
   }
 
+  /// Builds a route from the given args, interpolating fields in the path
+  /// and query parameters with the matching argument values.
+  RouteWithArguments<T> build(T args) {
+    final argsJson = args.toJson();
+
+    String interpolatedPath = _path;
+    while (_argsRegex.hasMatch(interpolatedPath)) {
+      final argName = _argsRegex.firstMatch(interpolatedPath)!.group(1)!;
+      interpolatedPath =
+          interpolatedPath.replaceFirst(_argsRegex, argsJson[argName]!);
+      argsJson.remove(argName);
+    }
+
+    return Uri(path: interpolatedPath, queryParameters: {
+      ..._uri.queryParameters,
+      ...argsJson,
+    }).toRoute(args);
+  }
+
+  RouteWithArguments<T>? parse(String? route) {
+    if (!match(route)) {
+      return null;
+    }
+    return build(_buildArgs(route)!);
+  }
+
+  /// Extracts a [Map] of args from the given path.
+  Map<String, String> _extractArgs(String? path) {
+    Map<String, String> argsJson = {};
+    final argMatches = _pathRegex.firstMatch(path!);
+
+    for (String argName in _args) {
+      if (argMatches != null) {
+        String matchedGroup = argMatches.namedGroup(argName)!;
+        argsJson[argName] = matchedGroup;
+      }
+    }
+
+    return argsJson;
+  }
+
   @override
   matchPath(String? route) {
     if (route == null) {
       return false;
     }
 
-    final uri = Uri.parse(route);
-
-    // The path for a route factory additionally checks that the given route
-    // matches its path format.
-    return _uri.path.isEmpty || _pathRegex.firstMatch(uri.path) != null;
+    // Check that the route's path matches the factory's path format.
+    return _pathRegex.hasMatch(Uri.parse(route).path);
   }
 
   @override

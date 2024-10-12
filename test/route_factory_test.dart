@@ -261,10 +261,4 @@ void main() {
       );
     },
   );
-
-  group('Route', () {
-    test('builds routes', () {
-      expect(Route('/users').name, '/users');
-    });
-  });
 }

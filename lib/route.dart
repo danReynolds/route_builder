@@ -1,6 +1,6 @@
 part of route_builder;
 
-class Route extends RouteMatcher {
+class Route extends _RouteMatcher {
   Route(
     super.name, {
     super.strictQueryParams = false,
@@ -19,6 +19,7 @@ class Route extends RouteMatcher {
     return _uri.routeName;
   }
 
+  /// Returns [name] appended to the base URI for the platform.
   Uri get withBase {
     return Uri.base.replace(
       path: _uri.path,
