@@ -53,8 +53,7 @@ class UserPostArguments extends Arguments {
   });
 
   UserPostArguments.fromJson(Map<String, String> json) :
-    userId = json['userId']!,
-    postId = json['postId']!;
+    userId = json['userId']!, postId = json['postId']!;
 
   @override
   toJson() {
@@ -78,10 +77,7 @@ class UserPostRouteFactory extends ArgumentRouteFactory<UserPostArguments> {
 }
 
 final viewPost = UserPostRouteFactory('/user/{id}/post/{id2}');
-final viewPostRoute = viewPost(
-  userId: '1',
-  postId: '2',
-);
+final viewPostRoute = viewPost(userId: '1', postId: '2');
 
 print(viewPostRoute.userId); // 1
 print(viewPostRoute.postId); // 2
