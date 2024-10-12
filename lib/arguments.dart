@@ -6,16 +6,6 @@ abstract class Arguments {
   Map<String, String?> toJson();
 }
 
-class ArgumentsFactory<T> {
-  final FromJson<T> fromJson;
-  final List<String> requiredArgs;
-
-  const ArgumentsFactory(
-    this.fromJson, {
-    this.requiredArgs = const [],
-  });
-}
-
 class RouteArgs extends Arguments {
   final String id;
 

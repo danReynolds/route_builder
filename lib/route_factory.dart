@@ -1,20 +1,22 @@
 part of route_builder;
 
 class ArgumentRouteFactory<T extends Arguments> extends _RouteMatcher {
-  final ArgumentsFactory<T> _argsFactory;
-
+  final FromJson<T> _fromJson;
   final _argsRegex = RegExp('{(.*?)}');
   static const _buildArgFragment = "[\\w\\d-]+?";
 
   final Set<String> _args = {};
+  late final Set<String> _requiredArgs;
   late final String _path = Uri.decodeFull(_uri.path);
   late final RegExp _pathRegex;
 
   ArgumentRouteFactory(
     String rawPath,
-    this._argsFactory, {
+    this._fromJson, {
+    Set<String> requiredArgs = const {},
     bool strictQueryParams = false,
-  }) : super(rawPath, strictQueryParams: strictQueryParams) {
+  })  : _requiredArgs = requiredArgs,
+        super(rawPath, strictQueryParams: strictQueryParams) {
     // Build the path regex and args list.
     String path = _path;
     while (true) {
@@ -54,13 +56,13 @@ class ArgumentRouteFactory<T extends Arguments> extends _RouteMatcher {
 
     // If any of the required arguments are not present in the args map,
     // return null to indicate that the arguments could not be built.
-    for (String argName in _argsFactory.requiredArgs) {
+    for (String argName in _requiredArgs) {
       if (!argsJson.containsKey(argName)) {
         return null;
       }
     }
 
-    return _argsFactory.fromJson(argsJson);
+    return _fromJson(argsJson);
   }
 
   /// Builds a route from the given args, interpolating fields in the path
@@ -128,8 +130,7 @@ class ArgumentRouteFactory<T extends Arguments> extends _RouteMatcher {
 }
 
 class RouteFactory extends ArgumentRouteFactory<RouteArgs> {
-  RouteFactory(String path)
-      : super(path, const ArgumentsFactory(RouteArgs.fromJson));
+  RouteFactory(String path) : super(path, RouteArgs.fromJson);
 
   RouteWithArguments<RouteArgs> call(String id) {
     return build(RouteArgs(id));
@@ -137,8 +138,7 @@ class RouteFactory extends ArgumentRouteFactory<RouteArgs> {
 }
 
 class RouteFactory2 extends ArgumentRouteFactory<RouteArgs2> {
-  RouteFactory2(String path)
-      : super(path, const ArgumentsFactory(RouteArgs2.fromJson));
+  RouteFactory2(String path) : super(path, RouteArgs2.fromJson);
 
   RouteWithArguments<RouteArgs2> call(String id, String id2) {
     return build(RouteArgs2(id, id2));
@@ -146,8 +146,7 @@ class RouteFactory2 extends ArgumentRouteFactory<RouteArgs2> {
 }
 
 class RouteFactory3 extends ArgumentRouteFactory<RouteArgs3> {
-  RouteFactory3(String path)
-      : super(path, const ArgumentsFactory(RouteArgs3.fromJson));
+  RouteFactory3(String path) : super(path, RouteArgs3.fromJson);
 
   RouteWithArguments<RouteArgs3> call(
     String id,
@@ -159,8 +158,7 @@ class RouteFactory3 extends ArgumentRouteFactory<RouteArgs3> {
 }
 
 class RouteFactory4 extends ArgumentRouteFactory<RouteArgs4> {
-  RouteFactory4(String path)
-      : super(path, const ArgumentsFactory(RouteArgs4.fromJson));
+  RouteFactory4(String path) : super(path, RouteArgs4.fromJson);
 
   RouteWithArguments<RouteArgs4> call(
     String id,
