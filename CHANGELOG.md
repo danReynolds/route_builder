@@ -1,18 +1,22 @@
+## 1.1.0
+
+* Remove unnecessary arguments factory.
+
 ## 1.0.0
 
-Refactor architecture.
+* Refactor architecture.
 
 ## 0.0.6
 
-Small bugfixes.
+* Small bugfixes.
 
 ## 0.0.5
 
-Fix bug with empty path argument matching
+* Fix bug with empty path argument matching
 
 ## 0.0.4
 
-Fix relative URI name construction
+* Fix relative URI name construction
 
 ## 0.0.3
 

@@ -66,8 +66,7 @@ class UserPostArguments extends Arguments {
 }
 
 class UserPostRouteFactory extends ArgumentRouteFactory<UserPostArguments> {
-  RouteFactory(String path)
-      : super(path, const ArgumentsFactory(UserPostArguments.fromJson));
+  RouteFactory(String path): super(path, UserPostArguments.fromJson);
 
   RouteWithArguments<UserPostArguments> call({
     required String userId,

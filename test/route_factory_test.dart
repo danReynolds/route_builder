@@ -16,21 +16,6 @@ class CustomArguments extends Arguments {
   }
 }
 
-class CustomArgumentsFactory extends ArgumentsFactory<CustomArguments> {
-  CustomArgumentsFactory()
-      : super(
-          (json) => CustomArguments(param: json['param']!),
-          requiredArgs: ['param'],
-        );
-}
-
-class OptionalCustomArgumentsFactory extends ArgumentsFactory<CustomArguments> {
-  OptionalCustomArgumentsFactory()
-      : super(
-          (json) => CustomArguments(param: json['param']),
-        );
-}
-
 void main() {
   group(
     'ArgumentRouteFactory',
@@ -39,14 +24,18 @@ void main() {
         late ArgumentRouteFactory<CustomArguments> factory;
 
         setUp(() {
-          factory =
-              ArgumentRouteFactory('/test/{param}', CustomArgumentsFactory());
+          factory = ArgumentRouteFactory(
+            '/test/{param}',
+            (json) => CustomArguments(param: json['param']!),
+          );
         });
 
         group('with a matching path', () {
           test('should build a route', () {
-            final factory =
-                ArgumentRouteFactory('/test/{param}', CustomArgumentsFactory());
+            final factory = ArgumentRouteFactory(
+              '/test/{param}',
+              (json) => CustomArguments(param: json['param']!),
+            );
             final route = factory.parse('/test/thing')!;
 
             expect(route.name, '/test/thing');
@@ -57,7 +46,7 @@ void main() {
             setUp(() {
               factory = ArgumentRouteFactory(
                 '/test/{param}?test&test2=true',
-                CustomArgumentsFactory(),
+                (json) => CustomArguments(param: json['param']!),
               );
             });
 
@@ -86,7 +75,10 @@ void main() {
 
         group('with no path', () {
           setUp(() {
-            factory = ArgumentRouteFactory('?test', CustomArgumentsFactory());
+            factory = ArgumentRouteFactory(
+              '?test',
+              (json) => CustomArguments(param: json['param']!),
+            );
           });
 
           test('should build the route using the current path', () {
@@ -100,8 +92,10 @@ void main() {
         late ArgumentRouteFactory<CustomArguments> factory;
 
         setUp(() {
-          factory =
-              ArgumentRouteFactory('/{param}/test', CustomArgumentsFactory());
+          factory = ArgumentRouteFactory(
+            '/{param}/test',
+            (json) => CustomArguments(param: json['param']!),
+          );
         });
 
         group('with a matching path', () {
@@ -113,7 +107,7 @@ void main() {
             setUp(() {
               factory = ArgumentRouteFactory(
                 '/{param}/test?thing',
-                CustomArgumentsFactory(),
+                (json) => CustomArguments(param: json['param']!),
               );
             });
 
@@ -134,7 +128,7 @@ void main() {
             expect(
               ArgumentRouteFactory(
                 '/{param}',
-                CustomArgumentsFactory(),
+                (json) => CustomArguments(param: json['param']!),
               ).match('/'),
               false,
             );
@@ -145,7 +139,7 @@ void main() {
           setUp(() {
             factory = ArgumentRouteFactory(
               '?param=true',
-              CustomArgumentsFactory(),
+              (json) => CustomArguments(param: json['param']!),
             );
           });
 
@@ -157,7 +151,7 @@ void main() {
             setUp(() {
               factory = ArgumentRouteFactory(
                 '?param=true',
-                CustomArgumentsFactory(),
+                (json) => CustomArguments(param: json['param']!),
                 strictQueryParams: true,
               );
             });
@@ -176,7 +170,8 @@ void main() {
           setUp(() {
             factory = ArgumentRouteFactory(
               '?thing=true',
-              CustomArgumentsFactory(),
+              (json) => CustomArguments(param: json['param']!),
+              requiredArgs: {'param'},
             );
           });
 
@@ -189,7 +184,7 @@ void main() {
           setUp(() {
             factory = ArgumentRouteFactory(
               '?thing=true',
-              OptionalCustomArgumentsFactory(),
+              (json) => CustomArguments(param: json['param']),
             );
           });
 
@@ -203,7 +198,7 @@ void main() {
         test('should build a route with the given args', () {
           final factory = ArgumentRouteFactory(
             '/{param}/test',
-            CustomArgumentsFactory(),
+            (json) => CustomArguments(param: json['param']),
           );
 
           expect(
@@ -215,7 +210,7 @@ void main() {
         test('should preserve query params', () {
           final factory = ArgumentRouteFactory(
             '/{param}/test?thing=2',
-            CustomArgumentsFactory(),
+            (json) => CustomArguments(param: json['param']),
           );
 
           expect(
