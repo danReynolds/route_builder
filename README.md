@@ -75,7 +75,7 @@ class UserPostRouteFactory extends ArgumentRouteFactory<UserPostArguments> {
   }
 }
 
-final viewPost = UserPostRouteFactory('/user/{id}/post/{id2}');
+final viewPost = UserPostRouteFactory('/user/{userId}/post/{postId}');
 final viewPostRoute = viewPost(userId: '1', postId: '2');
 
 print(viewPostRoute.userId); // 1
